@@ -5,6 +5,11 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+   variants: {
+    extend: {
+      tableLayout: ['responsive', 'hover', 'focus'],
+    },
+  },
   theme: {
     extend: {
       backgroundImage: {
