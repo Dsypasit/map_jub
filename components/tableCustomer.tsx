@@ -7,19 +7,58 @@ enum Pickup{
     vicinity = "vicinity"
 }
 
+interface Shipment {
+    amount: number
+    box: Box[]
+}
+
+interface Box{
+    size: string
+    weight: number
+}
 
 interface Customer{
     id: number
     name: string
-    weight: number
     post_code: string
-    size: string
+    shipment: Shipment
+    location: string
     pickup?: Pickup
 }
+
 
 type TableProps = {
  head: string[]
  body: Customer[]
+}
+
+function maximumCustomerSize(customer: Customer): string{
+    let customerBoxs = customer.shipment.box;
+    let minValue = splitSize(customerBoxs[0].size)
+    for (let box of customerBoxs){
+        let boxSize = splitSize(box.size)
+        minValue[0] = Math.min(minValue[0], boxSize[0])
+        minValue[1] = Math.min(minValue[1], boxSize[1])
+        minValue[2] = Math.min(minValue[2], boxSize[2])
+    }
+    return minValue.join("x")
+}
+
+
+function sumShipmentWeight(customer: Customer): number{
+    return customer.shipment.box.reduce((pre, cur) => pre+cur.weight, 0)
+}
+
+function sumShipmentSize(customer: Customer): number{
+    return customer.shipment.box.reduce((pre, cur) => pre + sumArray(splitSize(cur.size)), 0)
+}
+
+function splitSize(size: string): number[]{
+    return size.split("x").map(e => parseInt(e))
+}
+
+function sumArray(arr: number[]): number {
+    return arr.reduce((pre, cur) => pre+cur, 0)
 }
 
 export default function Table (props: TableProps){
@@ -35,11 +74,13 @@ export default function Table (props: TableProps){
             <tbody>
             {props.body.map((e, i) => (
                         <tr className={`border-b dark:border-neutral-500 ${e.pickup === Pickup.upcountry ? 'bg-red-300' : (e.pickup === Pickup.makesend ? 'bg-sky-300' : (e.pickup === Pickup.vicinity ? 'bg-green-300' : ''))}` } key={i}>
-                        {Object.entries(e).map(([k, v]) => (
-                                    <td className="whitespace-nowrap px-6 py-4 font-medium" key={k}>
-                                    {v}
-                                    </td>
-                                    ))}
+                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.id} </td>
+                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.name} </td>
+                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.post_code} </td>
+                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {sumShipmentWeight(e)} </td>
+                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {maximumCustomerSize(e)} </td>
+                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.location} </td>
+                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.pickup} </td>
                         </tr>
                         ))}
             </tbody>
