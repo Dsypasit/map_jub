@@ -29,7 +29,7 @@ interface Customer{
 
 type TableProps = {
  head: string[]
- body: Customer[]
+ body: Customer[]|undefined
 }
 
 function maximumCustomerSize(customer: Customer): string{
@@ -37,9 +37,9 @@ function maximumCustomerSize(customer: Customer): string{
     let minValue = splitSize(customerBoxs[0].size)
     for (let box of customerBoxs){
         let boxSize = splitSize(box.size)
-        minValue[0] = Math.min(minValue[0], boxSize[0])
-        minValue[1] = Math.min(minValue[1], boxSize[1])
-        minValue[2] = Math.min(minValue[2], boxSize[2])
+        minValue[0] = Math.max(minValue[0], boxSize[0])
+        minValue[1] = Math.max(minValue[1], boxSize[1])
+        minValue[2] = Math.max(minValue[2], boxSize[2])
     }
     return minValue.join("x")
 }
@@ -72,7 +72,7 @@ export default function Table (props: TableProps){
             </tr>
             </thead>
             <tbody>
-            {props.body.map((e, i) => (
+            {props.body?.map((e, i) => (
                         <tr className={`border-b dark:border-neutral-500 ${e.pickup === Pickup.upcountry ? 'bg-red-300' : (e.pickup === Pickup.makesend ? 'bg-sky-300' : (e.pickup === Pickup.vicinity ? 'bg-green-300' : ''))}` } key={i}>
                                 <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.id} </td>
                                 <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.name} </td>
@@ -81,6 +81,7 @@ export default function Table (props: TableProps){
                                 <td className="whitespace-nowrap px-6 py-4 font-medium" > {maximumCustomerSize(e)} </td>
                                 <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.location} </td>
                                 <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.pickup} </td>
+                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.shipment.amount} </td>
                         </tr>
                         ))}
             </tbody>

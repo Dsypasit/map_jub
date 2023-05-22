@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, ChangeEvent } from 'react';
 import mockData from '../mock_data/Person.json'
 import locationData from '../mock_data/post_code.json'
 import Table from '../components/tableCustomer'
@@ -59,6 +59,14 @@ interface Location{
 
 interface CustomerGroup{
     post_code: string
+    customers: Customer[]
+}
+
+interface LogisticCustomers{
+    logistic: Logistic | null
+    postcode: string
+    sumWeight: number
+    sumShipment: number
     customers: Customer[]
 }
 
@@ -198,7 +206,7 @@ function mockShipment(): Shipment{
     for (let i=0; i< amount; i++){
         box.push({ 
             weight : randomRange(100),
-            size : randomRange(170).toString() +'x' + randomRange(150).toString()+'x' + randomRange(150).toString(),
+            size : randomRange(170).toString() +'x' + randomRange(150).toString()+'x' + randomRange(90).toString(),
          })
     }
     return {
@@ -225,9 +233,9 @@ function maximumCustomerSize(customer: Customer): string{
     let minValue = splitSize(customerBoxs[0].size)
     for (let box of customerBoxs){
         let boxSize = splitSize(box.size)
-        minValue[0] = Math.min(minValue[0], boxSize[0])
-        minValue[1] = Math.min(minValue[1], boxSize[1])
-        minValue[2] = Math.min(minValue[2], boxSize[2])
+        minValue[0] = Math.max(minValue[0], boxSize[0])
+        minValue[1] = Math.max(minValue[1], boxSize[1])
+        minValue[2] = Math.max(minValue[2], boxSize[2])
     }
     return minValue.join("x")
 }
@@ -248,7 +256,7 @@ function compareShipmentAmount(cusAmount:number, logAmount:number): boolean{
     return cusAmount <= logAmount
 }
 
-function selectCars(customerGroup: CustomerGroup){
+function selectCars(customerGroup: CustomerGroup): LogisticCustomers {
     let sumWeight = customerGroup.customers.reduce((pre, cur) => pre+sumShipmentWeight(cur), 0)
     let sumShipment = customerGroup.customers.reduce((pre, cur) => pre+cur.shipment.amount, 0)
 
@@ -257,62 +265,104 @@ function selectCars(customerGroup: CustomerGroup){
         sumWeight <= e.condition.box.weight
     ))
 
-    let selectIndex = -1
-    for (let i=0; i<filterCars.length; i++){
-        let boxSize = filterCars[i].condition.box.size
-        selectIndex = i
-        for (let customer of customerGroup.customers){
-            let customerSize = maximumCustomerSize(customer)
-            if (!lessBox(customerSize, boxSize)){
-                selectIndex = -1
+    let selectIndex = 0
+    for (let customer of customerGroup.customers){
+        let customerSize = maximumCustomerSize(customer)
+        while(selectIndex<filterCars.length){
+            let boxSize = filterCars[selectIndex].condition.box.size
+            if (lessBox(customerSize, boxSize)){
                 break
             }
+            selectIndex++
         }
-        if (selectIndex !== -1){
-            break
+        if (!(selectIndex<filterCars.length)) return {
+        logistic: null,
+        postcode: customerGroup.post_code,
+        sumWeight,
+        sumShipment,
+        customers: customerGroup.customers
         }
     }
     return {
-        logisic: filterCars[selectIndex],
+        logistic: filterCars[selectIndex],
+        postcode: customerGroup.post_code,
         sumWeight,
-        sumShipment
+        sumShipment,
+        customers: customerGroup.customers
     }
 }
 
 export default function Index(){
-    let [customers, setCustomers] = useState<Array<Customer>>([]);
-    let [head, setHead] = useState<string[]>(["id", "name", "weight", "size", "post code", "location"]);
-    useEffect((()=>{
-                setCustomers(mockCustomer(customer_name_list));
-                }), [])
+  let [customers, setCustomers] = useState<Array<Customer>>([]);
+  let [logisticCustomer, setLogisticCustomer] = useState<LogisticCustomers[]>([]);
+  let [selectPostcode, setSelectPostCode] = useState<string[]>([])
+  let [selectCustomer, setSelectCustomer] = useState<LogisticCustomers|undefined>()
+  let [postCode, setPostCode] = useState<string>('')
+  let postCodeRef = useRef<HTMLSelectElement>(null)
+  let [head, setHead] = useState<string[]>([]);
+  useEffect(() => {
+    Mock();
+  }, []);
 
-    const Mock = () => {
-        setCustomers(pickupCustomers(mockCustomer(customer_name_list)))
-        setHead(["id", "name", "post code", "weight", "size", "location", "group"])
-        let customersGroups = groupCustomerByPostCode(customers.filter(e => isBangkokAndVicinity(e)));
-        customersGroups.map(e => console.log(selectCars(e)))
+  const Mock = () => {
+    setCustomers(pickupCustomers(mockCustomer(customer_name_list)));
+    setHead(["id", "name", "post code", "weight", "size", "location", "group", "shipment amount"]);
+    let customersGroups = groupCustomerByPostCode(
+      customers.filter((e) => isBangkokAndVicinity(e) && e.pickup===Pickup.vicinity)
+    );
+    setLogisticCustomer(customersGroups.map((e) => selectCars(e)));
+    setSelectPostCode(customersGroups.map(e => e.post_code))
+    setPostCode('')
+  };
+
+  const updateTable = () => {
+    setCustomers(pickupCustomers(customers));
+  };
+
+  const handleSelectPostCode = (e:ChangeEvent<HTMLSelectElement>) => {
+    if (!postCodeRef.current){
+        return
     }
+    setPostCode(postCodeRef.current.value)
+    setSelectCustomer(logisticCustomer.filter(l => l.postcode == postCodeRef.current?.value)[0])
+  }
 
-    const updateTable = () => {
-        setCustomers(pickupCustomers(customers))
-        setHead(["id", "name", "post code", "weight", "size", "location", "group"])
-            console.log(head)
-            console.log(customers)
-    }
-
-    const groupCustomer = () => {
-        let customersGroups = groupCustomerByPostCode(customers.filter(e => isBangkokAndVicinity(e)));
-        customersGroups.map(e => selectCars(e))
-    }
-
-    return <>
-        <div className="flex w-full justify-center mt-10">
-        <button className='bg-sky-500 mr-4 px-5 py-5 rounded-lg' onClick={Mock}>Mock user</button>
-        <button className='bg-sky-500 px-5 rounded-lg' onClick={updateTable}>Group</button>
-        <button className='bg-green-500 px-5 rounded-lg' onClick={groupCustomer}>Group</button>
-        </div>
-        <div className='flex justify-center mt-5'>
-            <Table head={head} body={customers} />
-        </div>
-        </>
+  return (
+    <>
+      <div className="flex w-full justify-center mt-10">
+        <button className="bg-sky-500 mr-4 px-5 py-5 rounded-lg" onClick={Mock}>
+          Mock user
+        </button>
+        <button className="bg-sky-500 px-5 mr-4 rounded-lg" onClick={updateTable}>
+          Group
+        </button>
+        <select
+          id="countries"
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          onChange={handleSelectPostCode}
+          value={postCode}
+          ref={postCodeRef}
+        >
+          <option selected>choose post code</option>
+          {selectPostcode.map(code => (
+            <option value={code}>{code}</option>
+          ))}
+        </select>
+      </div>
+      <div className="flex justify-center mt-5">
+        {postCode ==='' ?  <Table head={head} body={customers} /> :
+        (
+            <div>
+            <h1>Cars: {selectCustomer?.logistic?.car}</h1>
+            <h1>sum weight: {selectCustomer?.sumWeight}</h1>
+            <h1>condition-shipAmount: {selectCustomer?.logistic?.condition.shipmentAmount}</h1>
+            <h1>condition-box size: {selectCustomer?.logistic?.condition.box.size}</h1>
+            <h1>condition-box weight: {selectCustomer?.logistic?.condition.box.weight}</h1>
+            {<Table head={head} body={selectCustomer?.customers}/>}
+            </div>
+        )
+  }
+      </div>
+    </>
+  );
 }
