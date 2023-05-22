@@ -3,6 +3,7 @@ import mockData from '../mock_data/Person.json'
 import locationData from '../mock_data/post_code.json'
 import Table from '../components/tableCustomer'
 import '../app/globals.css'
+import TableLogistic from '../components/tableLogistic';
 
 enum Car{
     CurierBike = "Curier Bike",
@@ -225,7 +226,7 @@ function mockCustomer(name_list: Array<Person>): Customer[]{
                 location: location_list[locIndex].city
             } ;
     });
-    return customer_list.slice(0, 20)
+    return customer_list.slice(0, 50)
 }
 
 function maximumCustomerSize(customer: Customer): string{
@@ -298,6 +299,7 @@ export default function Index(){
   let [selectPostcode, setSelectPostCode] = useState<string[]>([])
   let [selectCustomer, setSelectCustomer] = useState<LogisticCustomers|undefined>()
   let [postCode, setPostCode] = useState<string>('')
+  let [group, setGroup] = useState<boolean>(false)
   let postCodeRef = useRef<HTMLSelectElement>(null)
   let [head, setHead] = useState<string[]>([]);
   useEffect(() => {
@@ -313,16 +315,26 @@ export default function Index(){
     setLogisticCustomer(customersGroups.map((e) => selectCars(e)));
     setSelectPostCode(customersGroups.map(e => e.post_code))
     setPostCode('')
+    setGroup(false)
   };
 
   const updateTable = () => {
     setCustomers(pickupCustomers(customers));
+    setHead(["id", "name", "post code", "weight", "size", "shipment amount"]);
+    let customersGroups = groupCustomerByPostCode(
+      customers.filter((e) => isBangkokAndVicinity(e) && e.pickup===Pickup.vicinity)
+    );
+    setLogisticCustomer(customersGroups.map((e) => selectCars(e)));
+    setSelectPostCode(customersGroups.map(e => e.post_code))
+    setPostCode('')
+    setGroup(true)
   };
 
   const handleSelectPostCode = (e:ChangeEvent<HTMLSelectElement>) => {
     if (!postCodeRef.current){
         return
     }
+    setHead(["id", "name", "post code", "weight", "size", "location", "group", "shipment amount"]);
     setPostCode(postCodeRef.current.value)
     setSelectCustomer(logisticCustomer.filter(l => l.postcode == postCodeRef.current?.value)[0])
   }
@@ -349,6 +361,24 @@ export default function Index(){
           ))}
         </select>
       </div>
+        {group ? 
+        <div className='grid grid-cols-3'>
+            {logisticCustomer.map(l => (
+                <div className='flex flex-col text-center mx-5 my-5'>
+                    <h1>{l.postcode}</h1>
+                    <h1>จังหวัด: {location_list.find(ll => ll.post_code == l.postcode)?.city}</h1>
+                    <h1>ขวาง: {location_list.find(ll => ll.post_code == l.postcode)?.kwang}</h1>
+                    <h1>เขต: {location_list.find(ll => ll.post_code == l.postcode)?.kate}</h1>
+                    <h1>ขวาง: {location_list.find(ll => ll.post_code == l.postcode)?.kwang}</h1>
+                    <h1>จำนวนshipment: {l.sumShipment}</h1>
+                    <h1>weight: {l.sumWeight}</h1>
+                    <h1>cars: {l.logistic?.car}</h1>
+                    <TableLogistic head={head} body={l.customers}/>
+                </div>
+            ))}
+        </div>
+        
+    : null}
       <div className="flex justify-center mt-5">
         {postCode ==='' ?  <Table head={head} body={customers} /> :
         (
