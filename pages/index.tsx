@@ -260,11 +260,31 @@ function compareShipmentAmount(cusAmount:number, logAmount:number): boolean{
 function selectCars(customerGroup: CustomerGroup): LogisticCustomers {
     let sumWeight = customerGroup.customers.reduce((pre, cur) => pre+sumShipmentWeight(cur), 0)
     let sumShipment = customerGroup.customers.reduce((pre, cur) => pre+cur.shipment.amount, 0)
+    let splitCustomers = []
 
     let filterCars = allCars.filter((e) => (
         compareShipmentAmount(sumShipment, e.condition.shipmentAmount) &&
         sumWeight <= e.condition.box.weight
     ))
+
+    if (sumWeight>1100){
+        let w=0;
+        let group: Customer[] = [];
+        let customersSorted = [...customerGroup.customers].sort((a, b) => sumShipmentWeight(b) - sumShipmentWeight(a))
+        for(let i=0; i< customersSorted.length; i++){
+            w += sumShipmentWeight(customersSorted[i])
+            if (w < 1100){
+                group.push(customersSorted[i])
+            }else{
+                w = 0
+                splitCustomers.push(group)
+                group = [customersSorted[i]]
+            }
+        }
+        if (group.length != 0){
+            splitCustomers.push(group)
+        }
+    }
 
     let selectIndex = 0
     for (let customer of customerGroup.customers){
@@ -363,6 +383,12 @@ export default function Index(){
       </div>
         {group ? 
         <div className='grid grid-cols-3'>
+            {
+                <div className='flex flex-col text-center mx-5 my-5'>
+                    <h1>{Pickup.makesend}</h1>
+                    <TableLogistic head={head} body={customers.filter(cus => cus.pickup === Pickup.makesend)}/>
+                </div>
+            }
             {logisticCustomer.map(l => (
                 <div className='flex flex-col text-center mx-5 my-5'>
                     <h1>{l.postcode}</h1>
