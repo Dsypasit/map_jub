@@ -312,6 +312,11 @@ function selectCars(customerGroup: CustomerGroup): LogisticCustomers {
         customers: customerGroup.customers
     }
 }
+declare global {
+  interface Window {
+    dataLayer: Record<string, any>[];
+  }
+}
 
 export default function Index(){
   let [customers, setCustomers] = useState<Array<Customer>>([]);
@@ -348,6 +353,7 @@ export default function Index(){
     setSelectPostCode(customersGroups.map(e => e.post_code))
     setPostCode('')
     setGroup(true)
+    window.dataLayer.push({'event': 'group'})
   };
 
   const handleSelectPostCode = (e:ChangeEvent<HTMLSelectElement>) => {
