@@ -376,8 +376,8 @@ export default function Index(){
           ref={postCodeRef}
         >
           <option selected>choose post code</option>
-          {selectPostcode.map(code => (
-            <option value={code}>{code}</option>
+          {selectPostcode.map((code, index) => (
+            <option key={index} value={code}>{code}</option>
           ))}
         </select>
       </div>
@@ -389,8 +389,8 @@ export default function Index(){
                     <TableLogistic head={head} body={customers.filter(cus => cus.pickup === Pickup.makesend)}/>
                 </div>
             }
-            {logisticCustomer.map(l => (
-                <div className='flex flex-col text-center mx-5 my-5'>
+            {logisticCustomer.map((l, index) => (
+                <div key={index} className='flex flex-col text-center mx-5 my-5'>
                     <h1>{l.postcode}</h1>
                     <h1>จังหวัด: {location_list.find(ll => ll.post_code == l.postcode)?.city}</h1>
                     <h1>ขวาง: {location_list.find(ll => ll.post_code == l.postcode)?.kwang}</h1>
