@@ -14,7 +14,6 @@ export default function MyApp({ Component, pageProps }:AppProps) {
         `
        }}>
       </Script>
-    <body>
       <noscript>
         <iframe
           src="https://www.googletagmanager.com/ns.html?id=GTM-PZD5TNF"
@@ -27,6 +26,5 @@ export default function MyApp({ Component, pageProps }:AppProps) {
         ></iframe>
       </noscript>
   <Component {...pageProps} />
-    </body>
   </>
 }
