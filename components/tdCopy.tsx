@@ -3,10 +3,14 @@ import clipboardCopy from 'clipboard-copy';
 
 interface CopyButtonProps {
   text: string;
+  option?: string[]
 }
 
-const TdCopy: React.FC<CopyButtonProps> = ({ text }) => {
+const TdCopy: React.FC<CopyButtonProps> = ({ text, option }: CopyButtonProps) => {
   const handleCopyClick = async () => {
+    if (option){
+      console.log(option)
+    }
     try {
       await clipboardCopy(text);
       console.log('Text copied to clipboard:', text);
@@ -16,7 +20,7 @@ const TdCopy: React.FC<CopyButtonProps> = ({ text }) => {
   };
 
   return (
-    <td onClick={handleCopyClick} className='whitespace-nowrap cursor-default hover:bg-slate-300 px-6 py-4 font-medium'>{text}</td>
+      <td onClick={handleCopyClick} className='whitespace-nowrap cursor-default hover:bg-slate-300 px-6 py-4 font-medium'>{text}</td>
   );
 };
 

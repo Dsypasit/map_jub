@@ -1,6 +1,8 @@
 import React from "react"
 import '../app/globals.css'
 import TdCopy from "./tdCopy"
+import clipboardCopy from 'clipboard-copy';
+import Dropdown from "./dropdown";
 
 enum Pickup{
     upcountry = "upcountry",
@@ -63,28 +65,78 @@ function sumArray(arr: number[]): number {
 }
 
 export default function TableLogistic (props: TableProps){
-    return (
-        <div className="overflow-scroll">
-    <table className=" text-left text-sm font-light min-w-fit">
+  const handleCopyClick = async (
+    event: React.MouseEvent<HTMLTableCellElement>
+  ) => {
+    let text = event.currentTarget.innerText;
+    console.log(text);
+    try {
+      await clipboardCopy(text);
+      console.log("Text copied to clipboard:", text);
+    } catch (error) {
+      console.error("Failed to copy text to clipboard:", error);
+    }
+  };
+  return (
+    <div className="overflow-scroll">
+      <table className=" text-left text-sm font-light min-w-fit">
         <thead>
-            <tr className="border-b font-medium dark:border-neutral-500">
+          <tr className="border-b font-medium dark:border-neutral-500">
             {props.head.map((e, i) => (
-                <th className="px-6 py-4" key={i}>{e}</th>
+              <th className="px-6 py-4" key={i}>
+                {e}
+              </th>
             ))}
+          </tr>
+        </thead>
+        <tbody>
+          {props.body?.map((e, i) => (
+            <tr
+              className={`border-b dark:border-neutral-500 ${
+                e.pickup === Pickup.upcountry
+                  ? "bg-red-300"
+                  : e.pickup === Pickup.makesend
+                  ? "bg-sky-300"
+                  : e.pickup === Pickup.vicinity
+                  ? "bg-green-300"
+                  : ""
+              }`}
+              key={i}
+            >
+              <td
+                onClick={handleCopyClick}
+                className="whitespace-nowrap cursor-default hover:bg-slate-300 px-6 py-4 font-medium"
+              >
+                {e.id}
+              </td>
+              <td
+                onClick={handleCopyClick}
+                className="whitespace-nowrap cursor-default hover:bg-slate-300 px-6 py-4 font-medium"
+              >
+              {e.name}
+              </td>
+              <td
+                onClick={handleCopyClick}
+                className="whitespace-nowrap cursor-default hover:bg-slate-300 px-6 py-4 font-medium"
+              >
+              {sumShipmentWeight(e)}
+              </td>
+              <td
+                onClick={handleCopyClick}
+                className="whitespace-nowrap cursor-default hover:bg-slate-300 px-6 py-4 font-medium"
+              >
+              <Dropdown options={e.shipment.box.map(b=>b.size.toString())}/>
+              </td>
+              <td
+                onClick={handleCopyClick}
+                className="whitespace-nowrap cursor-default hover:bg-slate-300 px-6 py-4 font-medium"
+              >
+              {e.shipment.amount}
+              </td>
             </tr>
-            </thead>
-            <tbody>
-            {props.body?.map((e, i) => (
-                        <tr className={`border-b dark:border-neutral-500 ${e.pickup === Pickup.upcountry ? 'bg-red-300' : (e.pickup === Pickup.makesend ? 'bg-sky-300' : (e.pickup === Pickup.vicinity ? 'bg-green-300' : ''))}` } key={i}>
-                                <TdCopy text={e.id.toString()}/>
-                                <TdCopy text={e.name}/>
-                                <TdCopy text={sumShipmentWeight(e).toString()}/>
-                                <TdCopy text={maximumCustomerSize(e).toString()}/>
-                                <TdCopy text={e.shipment.amount.toString()}/>
-                        </tr>
-                        ))}
-            </tbody>
-            </table>
-        </div>
-            )
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }

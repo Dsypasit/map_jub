@@ -379,7 +379,6 @@ export default function Index() {
     setHead([
       "id",
       "name",
-      "post code",
       "weight",
       "size",
       "location",
@@ -399,7 +398,7 @@ export default function Index() {
 
   const updateTable = () => {
     setCustomers(pickupCustomers(customers));
-    setHead(["id", "name", "post code", "weight", "size", "shipment amount"]);
+    setHead(["id", "name", "weight", "size", "shipment amount"]);
     let customersGroups = groupCustomerByPostCode(
       customers.filter(
         (e) => isBangkokAndVicinity(e) && e.pickup === Pickup.vicinity
@@ -419,7 +418,6 @@ export default function Index() {
     setHead([
       "id",
       "name",
-      "post code",
       "weight",
       "size",
       "location",
@@ -484,16 +482,12 @@ export default function Index() {
                 {location_list.find((ll) => ll.post_code == l.postcode)?.city}
               </h1>
               <h1>
-                ขวาง:{" "}
+                เขวง:{" "}
                 {location_list.find((ll) => ll.post_code == l.postcode)?.kwang}
               </h1>
               <h1>
                 เขต:{" "}
                 {location_list.find((ll) => ll.post_code == l.postcode)?.kate}
-              </h1>
-              <h1>
-                ขวาง:{" "}
-                {location_list.find((ll) => ll.post_code == l.postcode)?.kwang}
               </h1>
               <h1>จำนวนshipment: {l.sumShipment}</h1>
               <h1>weight: {l.sumWeight}</h1>
