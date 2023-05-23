@@ -1,5 +1,6 @@
 import React from "react"
 import '../app/globals.css'
+import TdCopy from "./tdCopy"
 
 enum Pickup{
     upcountry = "upcountry",
@@ -75,12 +76,11 @@ export default function TableLogistic (props: TableProps){
             <tbody>
             {props.body?.map((e, i) => (
                         <tr className={`border-b dark:border-neutral-500 ${e.pickup === Pickup.upcountry ? 'bg-red-300' : (e.pickup === Pickup.makesend ? 'bg-sky-300' : (e.pickup === Pickup.vicinity ? 'bg-green-300' : ''))}` } key={i}>
-                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.id} </td>
-                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.name} </td>
-                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.post_code} </td>
-                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {sumShipmentWeight(e)} </td>
-                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {maximumCustomerSize(e)} </td>
-                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.shipment.amount} </td>
+                                <TdCopy text={e.id.toString()}/>
+                                <TdCopy text={e.name}/>
+                                <TdCopy text={sumShipmentWeight(e).toString()}/>
+                                <TdCopy text={maximumCustomerSize(e).toString()}/>
+                                <TdCopy text={e.shipment.amount.toString()}/>
                         </tr>
                         ))}
             </tbody>
