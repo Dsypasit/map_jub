@@ -1,8 +1,10 @@
 import { AppProps } from "next/app";
+import Head from "next/head";
 import Script from 'next/script';
 
 export default function MyApp({ Component, pageProps }:AppProps) {
   return <>
+    <Head>
        <Script id="gtm" strategy="afterInteractive">
         {`
           (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -12,6 +14,8 @@ export default function MyApp({ Component, pageProps }:AppProps) {
           })(window,document,'script','dataLayer','GTM-PZD5TNF');
         `}
       </Script>
+    </Head>
+    <body>
       <noscript>
         <iframe
           src="https://www.googletagmanager.com/ns.html?id=GTM-PZD5TNF"
@@ -24,5 +28,6 @@ export default function MyApp({ Component, pageProps }:AppProps) {
         ></iframe>
       </noscript>
 <Component {...pageProps} />
+    </body>
   </>
 }
