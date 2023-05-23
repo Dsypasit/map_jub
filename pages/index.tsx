@@ -368,7 +368,7 @@ export default function Index(){
   return (
     <>
       <div className="flex w-full justify-center mt-10">
-        <button className="bg-sky-500 mr-4 px-5 py-5 rounded-lg" onClick={Mock}>
+        <button id="mock-btn" className="bg-sky-500 mr-4 px-5 py-5 rounded-lg" onClick={Mock}>
           Mock user
         </button>
         <button className="bg-sky-500 px-5 mr-4 rounded-lg" onClick={updateTable}>
