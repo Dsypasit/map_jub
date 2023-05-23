@@ -258,59 +258,98 @@ function compareShipmentAmount(cusAmount:number, logAmount:number): boolean{
 }
 
 function selectCars(customerGroup: CustomerGroup): LogisticCustomers {
-    let sumWeight = customerGroup.customers.reduce((pre, cur) => pre+sumShipmentWeight(cur), 0)
-    let sumShipment = customerGroup.customers.reduce((pre, cur) => pre+cur.shipment.amount, 0)
-    let splitCustomers = []
+  let sumWeight = customerGroup.customers.reduce(
+    (pre, cur) => pre + sumShipmentWeight(cur),
+    0
+  );
+  let sumShipment = customerGroup.customers.reduce(
+    (pre, cur) => pre + cur.shipment.amount,
+    0
+  );
+  let splitCustomers = [];
 
-    let filterCars = allCars.filter((e) => (
-        compareShipmentAmount(sumShipment, e.condition.shipmentAmount) &&
-        sumWeight <= e.condition.box.weight
-    ))
+  let filterCars = allCars.filter(
+    (e) =>
+      compareShipmentAmount(sumShipment, e.condition.shipmentAmount)
+  );
 
-    if (sumWeight>1100){
-        let w=0;
-        let group: Customer[] = [];
-        let customersSorted = [...customerGroup.customers].sort((a, b) => sumShipmentWeight(b) - sumShipmentWeight(a))
-        for(let i=0; i< customersSorted.length; i++){
-            w += sumShipmentWeight(customersSorted[i])
-            if (w < 1100){
-                group.push(customersSorted[i])
-            }else{
-                w = 0
-                splitCustomers.push(group)
-                group = [customersSorted[i]]
-            }
-        }
-        if (group.length != 0){
-            splitCustomers.push(group)
-        }
+  let w = 0;
+  let group: Customer[] = [];
+  let customersSorted = [...customerGroup.customers].sort(
+    (a, b) => sumShipmentWeight(b) - sumShipmentWeight(a)
+  );
+  customersSorted = [...customerGroup.customers].sort(
+    (a, b) => Math.min(...splitSize(maximumCustomerSize(b))) - Math.min(...splitSize(maximumCustomerSize(a)))
+  );
+  for (let i = 0; i < customersSorted.length; i++) {
+    w += sumShipmentWeight(customersSorted[i]);
+    if (w < 1100) {
+      group.push(customersSorted[i]);
+    } else {
+      w = 0;
+      splitCustomers.push(group);
+      group = [customersSorted[i]];
     }
+  }
+  if (group.length != 0) {
+    splitCustomers.push(group);
+  }
+  console.log(splitCustomers.map(sc => sc.reduce((pre, cur) => pre+sumShipmentWeight(cur), 0)))
 
-    let selectIndex = 0
-    for (let customer of customerGroup.customers){
-        let customerSize = maximumCustomerSize(customer)
-        while(selectIndex<filterCars.length){
-            let boxSize = filterCars[selectIndex].condition.box.size
-            if (lessBox(customerSize, boxSize)){
-                break
-            }
-            selectIndex++
+  let carGroups = [];
+  for (let customers of splitCustomers) {
+    let selectIndex = 0;
+    for (let customer of customers) {
+      let customerSize = maximumCustomerSize(customer);
+      while (selectIndex < filterCars.length) {
+        let boxSize = filterCars[selectIndex].condition.box.size;
+        if (lessBox(customerSize, boxSize)) {
+          break;
         }
-        if (!(selectIndex<filterCars.length)) return {
+        selectIndex++;
+      }
+      if (!(selectIndex < filterCars.length))
+        return {
+          logistic: null,
+          postcode: customerGroup.post_code,
+          sumWeight,
+          sumShipment,
+          customers: customerGroup.customers,
+        };
+    }
+    carGroups.push({
+      car: filterCars[selectIndex],
+      customers: customers.map(c => splitSize(maximumCustomerSize(c))),
+    });
+  }
+  console.log(carGroups);
+
+  let selectIndex = 0;
+  for (let customer of customerGroup.customers) {
+    let customerSize = maximumCustomerSize(customer);
+    while (selectIndex < filterCars.length) {
+      let boxSize = filterCars[selectIndex].condition.box.size;
+      if (lessBox(customerSize, boxSize)) {
+        break;
+      }
+      selectIndex++;
+    }
+    if (!(selectIndex < filterCars.length))
+      return {
         logistic: null,
         postcode: customerGroup.post_code,
         sumWeight,
         sumShipment,
-        customers: customerGroup.customers
-        }
-    }
-    return {
-        logistic: filterCars[selectIndex],
-        postcode: customerGroup.post_code,
-        sumWeight,
-        sumShipment,
-        customers: customerGroup.customers
-    }
+        customers: customerGroup.customers,
+      };
+  }
+  return {
+    logistic: filterCars[selectIndex],
+    postcode: customerGroup.post_code,
+    sumWeight,
+    sumShipment,
+    customers: customerGroup.customers,
+  };
 }
 declare global {
   interface Window {
@@ -318,14 +357,18 @@ declare global {
   }
 }
 
-export default function Index(){
+export default function Index() {
   let [customers, setCustomers] = useState<Array<Customer>>([]);
-  let [logisticCustomer, setLogisticCustomer] = useState<LogisticCustomers[]>([]);
-  let [selectPostcode, setSelectPostCode] = useState<string[]>([])
-  let [selectCustomer, setSelectCustomer] = useState<LogisticCustomers|undefined>()
-  let [postCode, setPostCode] = useState<string>('')
-  let [group, setGroup] = useState<boolean>(false)
-  let postCodeRef = useRef<HTMLSelectElement>(null)
+  let [logisticCustomer, setLogisticCustomer] = useState<LogisticCustomers[]>(
+    []
+  );
+  let [selectPostcode, setSelectPostCode] = useState<string[]>([]);
+  let [selectCustomer, setSelectCustomer] = useState<
+    LogisticCustomers | undefined
+  >();
+  let [postCode, setPostCode] = useState<string>("");
+  let [group, setGroup] = useState<boolean>(false);
+  let postCodeRef = useRef<HTMLSelectElement>(null);
   let [head, setHead] = useState<string[]>([]);
   useEffect(() => {
     Mock();
@@ -333,45 +376,78 @@ export default function Index(){
 
   const Mock = () => {
     setCustomers(pickupCustomers(mockCustomer(customer_name_list)));
-    setHead(["id", "name", "post code", "weight", "size", "location", "group", "shipment amount"]);
+    setHead([
+      "id",
+      "name",
+      "post code",
+      "weight",
+      "size",
+      "location",
+      "group",
+      "shipment amount",
+    ]);
     let customersGroups = groupCustomerByPostCode(
-      customers.filter((e) => isBangkokAndVicinity(e) && e.pickup===Pickup.vicinity)
+      customers.filter(
+        (e) => isBangkokAndVicinity(e) && e.pickup === Pickup.vicinity
+      )
     );
     setLogisticCustomer(customersGroups.map((e) => selectCars(e)));
-    setSelectPostCode(customersGroups.map(e => e.post_code))
-    setPostCode('')
-    setGroup(false)
+    setSelectPostCode(customersGroups.map((e) => e.post_code));
+    setPostCode("");
+    setGroup(false);
   };
 
   const updateTable = () => {
     setCustomers(pickupCustomers(customers));
     setHead(["id", "name", "post code", "weight", "size", "shipment amount"]);
     let customersGroups = groupCustomerByPostCode(
-      customers.filter((e) => isBangkokAndVicinity(e) && e.pickup===Pickup.vicinity)
+      customers.filter(
+        (e) => isBangkokAndVicinity(e) && e.pickup === Pickup.vicinity
+      )
     );
     setLogisticCustomer(customersGroups.map((e) => selectCars(e)));
-    setSelectPostCode(customersGroups.map(e => e.post_code))
-    setPostCode('')
-    setGroup(true)
-    window.dataLayer.push({'event': 'group'})
+    setSelectPostCode(customersGroups.map((e) => e.post_code));
+    setPostCode("");
+    setGroup(true);
+    window.dataLayer.push({ event: "group" });
   };
 
-  const handleSelectPostCode = (e:ChangeEvent<HTMLSelectElement>) => {
-    if (!postCodeRef.current){
-        return
+  const handleSelectPostCode = (e: ChangeEvent<HTMLSelectElement>) => {
+    if (!postCodeRef.current) {
+      return;
     }
-    setHead(["id", "name", "post code", "weight", "size", "location", "group", "shipment amount"]);
-    setPostCode(postCodeRef.current.value)
-    setSelectCustomer(logisticCustomer.filter(l => l.postcode == postCodeRef.current?.value)[0])
-  }
+    setHead([
+      "id",
+      "name",
+      "post code",
+      "weight",
+      "size",
+      "location",
+      "group",
+      "shipment amount",
+    ]);
+    setPostCode(postCodeRef.current.value);
+    setSelectCustomer(
+      logisticCustomer.filter(
+        (l) => l.postcode == postCodeRef.current?.value
+      )[0]
+    );
+  };
 
   return (
     <>
       <div className="flex w-full justify-center mt-10">
-        <button id="mock-btn" className="bg-sky-500 mr-4 px-5 py-5 rounded-lg" onClick={Mock}>
+        <button
+          id="mock-btn"
+          className="bg-sky-500 mr-4 px-5 py-5 rounded-lg"
+          onClick={Mock}
+        >
           Mock user
         </button>
-        <button className="bg-sky-500 px-5 mr-4 rounded-lg" onClick={updateTable}>
+        <button
+          className="bg-sky-500 px-5 mr-4 rounded-lg"
+          onClick={updateTable}
+        >
           Group
         </button>
         <select
@@ -383,47 +459,71 @@ export default function Index(){
         >
           <option selected>choose post code</option>
           {selectPostcode.map((code, index) => (
-            <option key={index} value={code}>{code}</option>
+            <option key={index} value={code}>
+              {code}
+            </option>
           ))}
         </select>
       </div>
-        {group ? 
-        <div className='grid grid-cols-3'>
-            {
-                <div className='flex flex-col text-center mx-5 my-5'>
-                    <h1>{Pickup.makesend}</h1>
-                    <TableLogistic head={head} body={customers.filter(cus => cus.pickup === Pickup.makesend)}/>
-                </div>
-            }
-            {logisticCustomer.map((l, index) => (
-                <div key={index} className='flex flex-col text-center mx-5 my-5'>
-                    <h1>{l.postcode}</h1>
-                    <h1>จังหวัด: {location_list.find(ll => ll.post_code == l.postcode)?.city}</h1>
-                    <h1>ขวาง: {location_list.find(ll => ll.post_code == l.postcode)?.kwang}</h1>
-                    <h1>เขต: {location_list.find(ll => ll.post_code == l.postcode)?.kate}</h1>
-                    <h1>ขวาง: {location_list.find(ll => ll.post_code == l.postcode)?.kwang}</h1>
-                    <h1>จำนวนshipment: {l.sumShipment}</h1>
-                    <h1>weight: {l.sumWeight}</h1>
-                    <h1>cars: {l.logistic?.car}</h1>
-                    <TableLogistic head={head} body={l.customers}/>
-                </div>
-            ))}
+      {group ? (
+        <div className="grid grid-cols-3">
+          {
+            <div className="flex flex-col text-center mx-5 my-5">
+              <h1>{Pickup.makesend}</h1>
+              <TableLogistic
+                head={head}
+                body={customers.filter((cus) => cus.pickup === Pickup.makesend)}
+              />
+            </div>
+          }
+          {logisticCustomer.map((l, index) => (
+            <div key={index} className="flex flex-col text-center mx-5 my-5">
+              <h1>{l.postcode}</h1>
+              <h1>
+                จังหวัด:{" "}
+                {location_list.find((ll) => ll.post_code == l.postcode)?.city}
+              </h1>
+              <h1>
+                ขวาง:{" "}
+                {location_list.find((ll) => ll.post_code == l.postcode)?.kwang}
+              </h1>
+              <h1>
+                เขต:{" "}
+                {location_list.find((ll) => ll.post_code == l.postcode)?.kate}
+              </h1>
+              <h1>
+                ขวาง:{" "}
+                {location_list.find((ll) => ll.post_code == l.postcode)?.kwang}
+              </h1>
+              <h1>จำนวนshipment: {l.sumShipment}</h1>
+              <h1>weight: {l.sumWeight}</h1>
+              <h1>cars: {l.logistic?.car}</h1>
+              <TableLogistic head={head} body={l.customers} />
+            </div>
+          ))}
         </div>
-        
-    : null}
+      ) : null}
       <div className="flex justify-center mt-5">
-        {postCode ==='' ?  <Table head={head} body={customers} /> :
-        (
-            <div>
+        {postCode === "" ? (
+          <Table head={head} body={customers} />
+        ) : (
+          <div>
             <h1>Cars: {selectCustomer?.logistic?.car}</h1>
             <h1>sum weight: {selectCustomer?.sumWeight}</h1>
-            <h1>condition-shipAmount: {selectCustomer?.logistic?.condition.shipmentAmount}</h1>
-            <h1>condition-box size: {selectCustomer?.logistic?.condition.box.size}</h1>
-            <h1>condition-box weight: {selectCustomer?.logistic?.condition.box.weight}</h1>
-            {<Table head={head} body={selectCustomer?.customers}/>}
-            </div>
-        )
-  }
+            <h1>
+              condition-shipAmount:{" "}
+              {selectCustomer?.logistic?.condition.shipmentAmount}
+            </h1>
+            <h1>
+              condition-box size: {selectCustomer?.logistic?.condition.box.size}
+            </h1>
+            <h1>
+              condition-box weight:{" "}
+              {selectCustomer?.logistic?.condition.box.weight}
+            </h1>
+            {<Table head={head} body={selectCustomer?.customers} />}
+          </div>
+        )}
       </div>
     </>
   );
