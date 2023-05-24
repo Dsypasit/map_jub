@@ -130,7 +130,7 @@ export default function Index() {
   return (
     <>
       <div
-        className={`z-50 bg-blue-400 text-blue-700 px-5 py-4 rounded-lg fixed bottom-4 right-0 ${showCopiedMessage ? "" : "hidden"}`}
+        className={`z-50 bg-blue-400 px-5 py-4 rounded-lg fixed bottom-4 right-0 ${showCopiedMessage ? "" : "hidden"}`}
         role="alert"
       >
         <p className="">copied!</p>
