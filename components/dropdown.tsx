@@ -9,14 +9,14 @@ const Dropdown: React.FC<DropdownProps> = ({ options }) => {
   const [selectedOption, setSelectedOption] = useState('');
 
   const handleOptionClick = (option: string) => {
-    setSelectedOption(option);
+    // setSelectedOption(option);
     setIsOpen(false);
   };
 
   return (
     <div className="dropdown">
       <div className="dropdown-toggle" onClick={() => setIsOpen(!isOpen)}>
-        {selectedOption || 'Select an option'}
+        {selectedOption || 'แสดง size ทังหมด'}
       </div>
       {isOpen && (
         <ul className="dropdown-menu">

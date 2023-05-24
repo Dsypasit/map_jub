@@ -4,202 +4,13 @@ import locationData from '../mock_data/post_code.json'
 import Table from '../components/tableCustomer'
 import '../app/globals.css'
 import TableLogistic from '../components/tableLogistic';
+import { randomRange } from '@/lib/utils';
+import { isBangkokAndVicinity, location_list, pickupCustomers, selectCars } from '@/lib/logistic';
+import { groupCustomerByPostCode } from '@/lib/customer';
+import { Pickup } from '@/models/logistic';
 
-enum Car{
-    CurierBike = "Curier Bike",
-    sedan = "sedan",
-    hatchBack = "hatch back",
-    SUV = "SUV",
-    kraba = "กระบะ",
-    krabaTub = "กระบะทึบ"
-}
-
-enum Pickup{
-    upcountry = "upcountry",
-    makesend = "makesend",
-    vicinity = "vicinity"
-}
-
-interface Person {
-    userName: string
-}
-
-interface Logistic{
-    car: Car
-    condition: {
-        shipmentAmount: number,
-        box: Box
-    }
-}
-interface Customer{
-    id: number
-    name: string
-    post_code: string
-    shipment: Shipment
-    location: string
-    pickup?: Pickup
-}
-
-interface Shipment {
-    amount: number
-    box: Box[]
-}
-
-interface Box{
-    size: string
-    weight: number
-}
-
-interface Location{
-    location_code: string
-    city: string
-    kate: string
-    kwang: string
-    post_code: string
-}
-
-interface CustomerGroup{
-    post_code: string
-    customers: Customer[]
-}
-
-interface LogisticCustomers{
-    logistic: Logistic | null
-    postcode: string
-    sumWeight: number
-    sumShipment: number
-    customers: Customer[]
-}
 
 let customer_name_list: Array<Person> = JSON.parse(JSON.stringify(mockData));
-let location_list: Array<Location> = JSON.parse(JSON.stringify(locationData));
-let allCars : Logistic[] = [
-    {
-        car: Car.CurierBike,
-        condition: {
-            shipmentAmount: 4,
-            box: {
-                size: "50x50x50",
-                weight: 20
-            }
-        }
-
-    },
-    {
-        car: Car.sedan,
-        condition: {
-            shipmentAmount: 5,
-            box: {
-                size: "90x100x75",
-                weight: 100
-            }
-        }
-
-    },
-    {
-        car: Car.hatchBack,
-        condition: {
-            shipmentAmount: 5,
-            box: {
-                size: "115x115x80",
-                weight: 200
-            }
-        }
-
-    },
-    {
-        car: Car.SUV,
-        condition: {
-            shipmentAmount: 7,
-            box: {
-                size: "130x160x80",
-                weight: 300
-            }
-        }
-
-    },
-    {
-        car: Car.kraba,
-        condition: {
-            shipmentAmount: -1,
-            box: {
-                size: "170x180x90",
-                weight: 1100
-            }
-        }
-
-    },
-    {
-        car: Car.krabaTub,
-        condition: {
-            shipmentAmount: -1,
-            box: {
-                size: "170x210x210",
-                weight: 1100
-            }
-        }
-
-    },
-]  
-
-function randomRange(end:number): number{
-    return Math.floor(Math.random()*end+1)
-}
-
-function bangkokAndVicinityCode(location: Location[]) :string[]{
-    let bangkok_and_vicinity = ["กรุงเทพมหานคร", "นนทบุรี", "สมุทรปราการ", "ปทุมธานี"]
-    return location.filter(e => bangkok_and_vicinity.includes(e.city)).map(e => e.post_code)
-}
-
-function isBangkokAndVicinity(customer: Customer): boolean{
-    return bangkokAndVicinityCode(location_list).includes(customer.post_code)
-}
-
-function groupCustomerByPostCode(customers: Customer[]): CustomerGroup[]{
-    let customerPostCodes = customers.map(e => (e.post_code))
-    let uniqueCustomerPostCodes = new Set(customerPostCodes)
-
-    let customerGroups: CustomerGroup[] = Array.from(uniqueCustomerPostCodes).map(loc => ({
-        post_code: loc,
-        customers: customers.filter(e => e.post_code === loc)
-                }));
-    return customerGroups
-}
-
-function splitSize(size: string): number[]{
-    return size.split("x").map(e => parseInt(e))
-}
-
-function pickup(customer: Customer): Pickup{
-    if (!isBangkokAndVicinity(customer)){
-        return Pickup.upcountry
-    }else if(customer.shipment.amount <= 3 && sumShipmentWeight(customer)<=25 && sumShipmentSize(customer) <= 200){
-        return Pickup.makesend
-    }
-    return Pickup.vicinity
-}
-
-function pickupCustomers(customers: Customer[]): Customer[]{
-    return customers.map(e => ({
-        ...e, pickup: pickup(e)
-                }))
-}
-
-// function pickupVicinity(customer: Customer): Cars{
-//
-// }
-
-function sumShipmentWeight(customer: Customer): number{
-    return customer.shipment.box.reduce((pre, cur) => pre+cur.weight, 0)
-}
-
-function sumShipmentSize(customer: Customer): number{
-    return customer.shipment.box.reduce((pre, cur) => pre + sumArray(splitSize(cur.size)), 0)
-}
-
-function sumArray(arr: number[]): number {
-    return arr.reduce((pre, cur) => pre+cur, 0)
-}
 
 function mockShipment(): Shipment{
     let amount = randomRange(5)
@@ -229,136 +40,9 @@ function mockCustomer(name_list: Array<Person>): Customer[]{
     return customer_list.slice(0, 50)
 }
 
-function maximumCustomerSize(customer: Customer): string{
-    let customerBoxs = customer.shipment.box;
-    let minValue = splitSize(customerBoxs[0].size)
-    for (let box of customerBoxs){
-        let boxSize = splitSize(box.size)
-        minValue[0] = Math.max(minValue[0], boxSize[0])
-        minValue[1] = Math.max(minValue[1], boxSize[1])
-        minValue[2] = Math.max(minValue[2], boxSize[2])
-    }
-    return minValue.join("x")
-}
-
-function lessBox(customerBoxSize: string, boxSize: string): boolean{
-    let splitA = splitSize(customerBoxSize)
-    let splitB = splitSize(boxSize)
-    return (splitA[0] <= splitB[0] &&
-splitA[1] <= splitB[1] &&
-splitA[2] <= splitB[2] 
-)
-}
-
-function compareShipmentAmount(cusAmount:number, logAmount:number): boolean{
-    if (logAmount === -1){
-        return true
-    }
-    return cusAmount <= logAmount
-}
-
-function selectCars(customerGroup: CustomerGroup): LogisticCustomers {
-  let sumWeight = customerGroup.customers.reduce(
-    (pre, cur) => pre + sumShipmentWeight(cur),
-    0
-  );
-  let sumShipment = customerGroup.customers.reduce(
-    (pre, cur) => pre + cur.shipment.amount,
-    0
-  );
-  let splitCustomers = [];
-
-  let filterCars = allCars.filter(
-    (e) =>
-      compareShipmentAmount(sumShipment, e.condition.shipmentAmount)
-  );
-
-  let w = 0;
-  let group: Customer[] = [];
-  let customersSorted = [...customerGroup.customers].sort(
-    (a, b) => sumShipmentWeight(b) - sumShipmentWeight(a)
-  );
-  customersSorted = [...customerGroup.customers].sort(
-    (a, b) => Math.min(...splitSize(maximumCustomerSize(b))) - Math.min(...splitSize(maximumCustomerSize(a)))
-  );
-  for (let i = 0; i < customersSorted.length; i++) {
-    w += sumShipmentWeight(customersSorted[i]);
-    if (w < 1100) {
-      group.push(customersSorted[i]);
-    } else {
-      w = 0;
-      splitCustomers.push(group);
-      group = [customersSorted[i]];
-    }
-  }
-  if (group.length != 0) {
-    splitCustomers.push(group);
-  }
-  console.log(splitCustomers.map(sc => sc.reduce((pre, cur) => pre+sumShipmentWeight(cur), 0)))
-
-  let carGroups = [];
-  for (let customers of splitCustomers) {
-    let selectIndex = 0;
-    for (let customer of customers) {
-      let customerSize = maximumCustomerSize(customer);
-      while (selectIndex < filterCars.length) {
-        let boxSize = filterCars[selectIndex].condition.box.size;
-        if (lessBox(customerSize, boxSize)) {
-          break;
-        }
-        selectIndex++;
-      }
-      if (!(selectIndex < filterCars.length))
-        return {
-          logistic: null,
-          postcode: customerGroup.post_code,
-          sumWeight,
-          sumShipment,
-          customers: customerGroup.customers,
-        };
-    }
-    carGroups.push({
-      car: filterCars[selectIndex],
-      customers: customers.map(c => splitSize(maximumCustomerSize(c))),
-    });
-  }
-  console.log(carGroups);
-
-  let selectIndex = 0;
-  for (let customer of customerGroup.customers) {
-    let customerSize = maximumCustomerSize(customer);
-    while (selectIndex < filterCars.length) {
-      let boxSize = filterCars[selectIndex].condition.box.size;
-      if (lessBox(customerSize, boxSize)) {
-        break;
-      }
-      selectIndex++;
-    }
-    if (!(selectIndex < filterCars.length))
-      return {
-        logistic: null,
-        postcode: customerGroup.post_code,
-        sumWeight,
-        sumShipment,
-        customers: customerGroup.customers,
-      };
-  }
-  return {
-    logistic: filterCars[selectIndex],
-    postcode: customerGroup.post_code,
-    sumWeight,
-    sumShipment,
-    customers: customerGroup.customers,
-  };
-}
-declare global {
-  interface Window {
-    dataLayer: Record<string, any>[];
-  }
-}
-
 export default function Index() {
   let [customers, setCustomers] = useState<Array<Customer>>([]);
+  const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   let [logisticCustomer, setLogisticCustomer] = useState<LogisticCustomers[]>(
     []
   );
@@ -411,6 +95,13 @@ export default function Index() {
     window.dataLayer.push({ event: "group" });
   };
 
+  const handleCopyClick = () => {
+    setShowCopiedMessage(true);
+    setTimeout(() => {
+      setShowCopiedMessage(false);
+    }, 3000);
+  };
+
   const handleSelectPostCode = (e: ChangeEvent<HTMLSelectElement>) => {
     if (!postCodeRef.current) {
       return;
@@ -434,6 +125,12 @@ export default function Index() {
 
   return (
     <>
+      <div
+        className={`z-50 bg-blue-100 border-blue-500 text-blue-700 px-5 py-4 rounded-lg fixed bottom-4 right-0 ${showCopiedMessage ? "" : "hidden"}`}
+        role="alert"
+      >
+        <p className="">copied!</p>
+      </div>
       <div className="flex w-full justify-center mt-10">
         <button
           id="mock-btn"
@@ -464,11 +161,12 @@ export default function Index() {
         </select>
       </div>
       {group ? (
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-2">
           {
             <div className="flex flex-col text-center mx-5 my-5">
               <h1>{Pickup.makesend}</h1>
               <TableLogistic
+                showCopy={handleCopyClick}
                 head={head}
                 body={customers.filter((cus) => cus.pickup === Pickup.makesend)}
               />
@@ -482,7 +180,7 @@ export default function Index() {
                 {location_list.find((ll) => ll.post_code == l.postcode)?.city}
               </h1>
               <h1>
-                เขวง:{" "}
+                แขวง:{" "}
                 {location_list.find((ll) => ll.post_code == l.postcode)?.kwang}
               </h1>
               <h1>
@@ -490,9 +188,9 @@ export default function Index() {
                 {location_list.find((ll) => ll.post_code == l.postcode)?.kate}
               </h1>
               <h1>จำนวนshipment: {l.sumShipment}</h1>
-              <h1>weight: {l.sumWeight}</h1>
+              <h1>รวม weight : {l.sumWeight}</h1>
               <h1>cars: {l.logistic?.car}</h1>
-              <TableLogistic head={head} body={l.customers} />
+              <TableLogistic head={head} body={l.customers} showCopy={handleCopyClick} />
             </div>
           ))}
         </div>
