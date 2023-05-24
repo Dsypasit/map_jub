@@ -1,6 +1,7 @@
 import { compareShipmentAmount, lessBox, maximumCustomerSize, splitSize, sumShipmentSize, sumShipmentWeight } from "./customer"
 import locationData from '../mock_data/post_code.json'
 import { Car, Logistic, Pickup } from "@/models/logistic";
+import { Customer, CustomerGroup, Location, LogisticCustomers } from "@/models/customer";
 
 export let location_list: Array<Location> = JSON.parse(JSON.stringify(locationData));
 

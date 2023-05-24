@@ -8,7 +8,11 @@ import { randomRange } from '@/lib/utils';
 import { isBangkokAndVicinity, location_list, pickupCustomers, selectCars } from '@/lib/logistic';
 import { groupCustomerByPostCode } from '@/lib/customer';
 import { Pickup } from '@/models/logistic';
+import { Shipment, Box, Customer, LogisticCustomers } from '@/models/customer';
 
+interface Person {
+    userName: string
+}
 
 let customer_name_list: Array<Person> = JSON.parse(JSON.stringify(mockData));
 

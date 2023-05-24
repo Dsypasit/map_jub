@@ -1,3 +1,4 @@
+import { Customer, CustomerGroup } from "@/models/customer";
 import { sumArray } from "./utils";
 
 export function groupCustomerByPostCode(customers: Customer[]): CustomerGroup[]{

@@ -1,3 +1,5 @@
+import { Box } from "./customer"
+
 export enum Car{
     CurierBike = "Curier Bike",
     sedan = "sedan",

@@ -1,8 +1,10 @@
-interface Person {
+import { Logistic, Pickup } from "./logistic"
+
+export interface Person {
     userName: string
 }
 
-interface Customer{
+export interface Customer{
     id: number
     name: string
     post_code: string
@@ -11,17 +13,17 @@ interface Customer{
     pickup?: Pickup
 }
 
-interface Shipment {
+export interface Shipment {
     amount: number
     box: Box[]
 }
 
-interface Box{
+export interface Box{
     size: string
     weight: number
 }
 
-interface Location{
+export interface Location{
     location_code: string
     city: string
     kate: string
@@ -29,12 +31,12 @@ interface Location{
     post_code: string
 }
 
-interface CustomerGroup{
+export interface CustomerGroup{
     post_code: string
     customers: Customer[]
 }
 
-interface LogisticCustomers{
+export interface LogisticCustomers{
     logistic: Logistic | null
     postcode: string
     sumWeight: number
