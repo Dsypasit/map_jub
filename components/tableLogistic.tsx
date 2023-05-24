@@ -52,7 +52,7 @@ export default function TableLogistic (props: TableProps){
     }
   };
   return (
-    <div className="overflow-scroll h-[500px]">
+    <div className="overflow-scroll max-h-[500px] mb-5">
       <table className=" text-left text-sm font-light min-w-fit">
         <thead>
           <tr className="border-b font-medium bg-orange-400 dark:border-neutral-500">

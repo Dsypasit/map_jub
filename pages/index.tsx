@@ -98,7 +98,16 @@ export default function Index() {
     setGroup(true);
     window.dataLayer.push({
       event: "group",
-      customer_id:  ["John", "Alice", "Michael", "Emily", "David", "Sophia", "Daniel", "Olivia"][randomRange(7)],
+      customer_id: [
+        "John",
+        "Alice",
+        "Michael",
+        "Emily",
+        "David",
+        "Sophia",
+        "Daniel",
+        "Olivia",
+      ][randomRange(7)],
       price: randomRange(5000),
       shipment_type: ["car", "plane", "boat"][randomRange(2)],
     });
@@ -188,13 +197,19 @@ export default function Index() {
                 {location_list.find((ll) => ll.post_code == l.postcode)?.kate}
               </h1>
               <h1>จำนวนshipment: {l.sumShipment}</h1>
-              <h1>รวม weight : {l.sumWeight}</h1>
-              <h1>cars: {l.logistic?.car}</h1>
-              <TableLogistic
-                head={head}
-                body={l.customers}
-                showCopy={handleCopyClick}
-              />
+              <h1>รวม weight ทั้งหมด : {l.sumWeight}</h1>
+              {l.carGroups.map((cg, i) => ( 
+                <>
+                  <h1 className='text-6xl' key={i}>cars: {cg.logistic?.car}</h1>
+                  <h1 className='text-4xl' key={i}>weight คันนี้ : {cg.totalWeight}</h1>
+                  <TableLogistic
+                    key={i}
+                    head={head}
+                    body={cg.customers}
+                    showCopy={handleCopyClick}
+                  />
+                </>
+               ))}
             </div>
           ))}
         </div>
@@ -202,24 +217,8 @@ export default function Index() {
       <div className="flex justify-center mt-5">
         {postCode === "" ? (
           <Table head={head} body={customers} />
-        ) : (
-          <div>
-            <h1>Cars: {selectCustomer?.logistic?.car}</h1>
-            <h1>sum weight: {selectCustomer?.sumWeight}</h1>
-            <h1>
-              condition-shipAmount:{" "}
-              {selectCustomer?.logistic?.condition.shipmentAmount}
-            </h1>
-            <h1>
-              condition-box size: {selectCustomer?.logistic?.condition.box.size}
-            </h1>
-            <h1>
-              condition-box weight:{" "}
-              {selectCustomer?.logistic?.condition.box.weight}
-            </h1>
-            {<Table head={head} body={selectCustomer?.customers} />}
-          </div>
-        )}
+        ) : ""
+        }
       </div>
     </>
   );

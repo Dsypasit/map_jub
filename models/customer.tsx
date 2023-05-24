@@ -37,9 +37,14 @@ export interface CustomerGroup{
 }
 
 export interface LogisticCustomers{
-    logistic: Logistic | null
     postcode: string
     sumWeight: number
     sumShipment: number
+    carGroups: carGroups[]
+}
+
+export interface carGroups {
+    logistic: Logistic | null
+    totalWeight: number
     customers: Customer[]
 }
