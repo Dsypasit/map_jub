@@ -96,7 +96,12 @@ export default function Index() {
     setSelectPostCode(customersGroups.map((e) => e.post_code));
     setPostCode("");
     setGroup(true);
-    window.dataLayer.push({ event: "group" });
+    window.dataLayer.push({
+      event: "group",
+      customer_id: "abcde",
+      price: randomRange(5000),
+      shipment_type: ["car", "plane", "boat"][randomRange(3)],
+    });
   };
 
   const handleCopyClick = () => {
@@ -130,7 +135,9 @@ export default function Index() {
   return (
     <>
       <div
-        className={`z-50 bg-blue-400 px-5 py-4 rounded-lg fixed bottom-4 right-0 ${showCopiedMessage ? "" : "hidden"}`}
+        className={`z-50 bg-blue-400 px-5 py-4 rounded-lg fixed bottom-4 right-0 ${
+          showCopiedMessage ? "" : "hidden"
+        }`}
         role="alert"
       >
         <p className="">copied!</p>
@@ -163,7 +170,10 @@ export default function Index() {
             </div>
           }
           {logisticCustomer.map((l, index) => (
-            <div key={index} className="flex flex-col text-center mx-5 my-5 border rounded-lg p-3 bg-gray-100">
+            <div
+              key={index}
+              className="flex flex-col text-center mx-5 my-5 border rounded-lg p-3 bg-gray-100"
+            >
               <h1>{l.postcode}</h1>
               <h1>
                 จังหวัด:{" "}
@@ -180,7 +190,11 @@ export default function Index() {
               <h1>จำนวนshipment: {l.sumShipment}</h1>
               <h1>รวม weight : {l.sumWeight}</h1>
               <h1>cars: {l.logistic?.car}</h1>
-              <TableLogistic head={head} body={l.customers} showCopy={handleCopyClick} />
+              <TableLogistic
+                head={head}
+                body={l.customers}
+                showCopy={handleCopyClick}
+              />
             </div>
           ))}
         </div>
