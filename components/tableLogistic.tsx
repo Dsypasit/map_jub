@@ -52,10 +52,10 @@ export default function TableLogistic (props: TableProps){
     }
   };
   return (
-    <div className="overflow-scroll relative">
+    <div className="overflow-scroll ">
       <table className=" text-left text-sm font-light min-w-fit">
         <thead>
-          <tr className="border-b font-medium dark:border-neutral-500">
+          <tr className="border-b font-medium bg-orange-400 dark:border-neutral-500">
             {props.head.map((e, i) => (
               <th className="px-6 py-4" key={i}>
                 {e}

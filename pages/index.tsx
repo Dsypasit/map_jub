@@ -99,7 +99,7 @@ export default function Index() {
     setShowCopiedMessage(true);
     setTimeout(() => {
       setShowCopiedMessage(false);
-    }, 3000);
+    }, 700);
   };
 
   const handleSelectPostCode = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -126,7 +126,7 @@ export default function Index() {
   return (
     <>
       <div
-        className={`z-50 bg-blue-100 border-blue-500 text-blue-700 px-5 py-4 rounded-lg fixed bottom-4 right-0 ${showCopiedMessage ? "" : "hidden"}`}
+        className={`z-50 bg-blue-400 text-blue-700 px-5 py-4 rounded-lg fixed bottom-4 right-0 ${showCopiedMessage ? "" : "hidden"}`}
         role="alert"
       >
         <p className="">copied!</p>
@@ -145,25 +145,11 @@ export default function Index() {
         >
           Group
         </button>
-        <select
-          id="countries"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          onChange={handleSelectPostCode}
-          value={postCode}
-          ref={postCodeRef}
-        >
-          <option selected>choose post code</option>
-          {selectPostcode.map((code, index) => (
-            <option key={index} value={code}>
-              {code}
-            </option>
-          ))}
-        </select>
       </div>
       {group ? (
         <div className="grid grid-cols-2">
           {
-            <div className="flex flex-col text-center mx-5 my-5">
+            <div className="flex flex-col text-center mx-5 my-5 border rounded-lg p-3 bg-gray-100">
               <h1>{Pickup.makesend}</h1>
               <TableLogistic
                 showCopy={handleCopyClick}
@@ -173,7 +159,7 @@ export default function Index() {
             </div>
           }
           {logisticCustomer.map((l, index) => (
-            <div key={index} className="flex flex-col text-center mx-5 my-5">
+            <div key={index} className="flex flex-col text-center mx-5 my-5 border rounded-lg p-3 bg-gray-100">
               <h1>{l.postcode}</h1>
               <h1>
                 จังหวัด:{" "}
