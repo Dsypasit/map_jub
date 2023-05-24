@@ -98,9 +98,9 @@ export default function Index() {
     setGroup(true);
     window.dataLayer.push({
       event: "group",
-      customer_id: "abcde",
+      customer_id:  ["John", "Alice", "Michael", "Emily", "David", "Sophia", "Daniel", "Olivia"][randomRange(7)],
       price: randomRange(5000),
-      shipment_type: ["car", "plane", "boat"][randomRange(3)],
+      shipment_type: ["car", "plane", "boat"][randomRange(2)],
     });
   };
 
