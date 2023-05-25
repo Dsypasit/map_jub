@@ -5,8 +5,9 @@ export interface Person {
 }
 
 export interface Customer{
-    id: number
+    pickupId: number
     name: string
+    phone: string
     post_code: string
     shipment: Shipment
     location: string

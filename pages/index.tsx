@@ -6,7 +6,7 @@ import '../app/globals.css'
 import TableLogistic from '../components/tableLogistic';
 import { randomRange } from '@/lib/utils';
 import { isBangkokAndVicinity, location_list, pickupCustomers, selectCars } from '@/lib/logistic';
-import { groupCustomerByPostCode } from '@/lib/customer';
+import { fetchCustomerByPickupID, groupCustomerByPostCode, useFetchCustomerByPickupID } from '@/lib/customer';
 import { Pickup } from '@/models/logistic';
 import { Shipment, Box, Customer, LogisticCustomers } from '@/models/customer';
 
@@ -34,7 +34,8 @@ function mockCustomer(name_list: Array<Person>): Customer[]{
     let customer_list: Customer[] = name_list.map((e, i) => { 
             const locIndex = randomRange(location_list.length-1);
             return {
-                id : i,
+                pickupId : i,
+                phone: "",
                 name : e.userName,
                 shipment: mockShipment(),
                 post_code : location_list[locIndex].post_code,
@@ -58,8 +59,12 @@ export default function Index() {
   let [group, setGroup] = useState<boolean>(false);
   let postCodeRef = useRef<HTMLSelectElement>(null);
   let [head, setHead] = useState<string[]>([]);
+  let {customer, getCustomer} = useFetchCustomerByPickupID(550845)
   useEffect(() => {
     Mock();
+    fetchCustomerByPickupID(550845).then(data=> {
+      console.log(data)
+    })
   }, []);
 
   const Mock = () => {

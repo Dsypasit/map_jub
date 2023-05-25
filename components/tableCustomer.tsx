@@ -1,30 +1,7 @@
 import React from "react"
 import '../app/globals.css'
-
-enum Pickup{
-    upcountry = "upcountry",
-    makesend = "makesend",
-    vicinity = "vicinity"
-}
-
-interface Shipment {
-    amount: number
-    box: Box[]
-}
-
-interface Box{
-    size: string
-    weight: number
-}
-
-interface Customer{
-    id: number
-    name: string
-    post_code: string
-    shipment: Shipment
-    location: string
-    pickup?: Pickup
-}
+import { Customer } from "@/models/customer"
+import { Pickup } from "@/models/logistic"
 
 
 type TableProps = {
@@ -74,9 +51,8 @@ export default function Table (props: TableProps){
             <tbody>
             {props.body?.map((e, i) => (
                         <tr className={`border-b dark:border-neutral-500 ${e.pickup === Pickup.upcountry ? 'bg-red-300' : (e.pickup === Pickup.makesend ? 'bg-sky-300' : (e.pickup === Pickup.vicinity ? 'bg-green-300' : ''))}` } key={i}>
-                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.id} </td>
+                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.pickupId} </td>
                                 <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.name} </td>
-                                <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.post_code} </td>
                                 <td className="whitespace-nowrap px-6 py-4 font-medium" > {sumShipmentWeight(e)} </td>
                                 <td className="whitespace-nowrap px-6 py-4 font-medium" > {maximumCustomerSize(e)} </td>
                                 <td className="whitespace-nowrap px-6 py-4 font-medium" > {e.location} </td>

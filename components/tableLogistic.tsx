@@ -4,31 +4,7 @@ import TdCopy from "./tdCopy"
 import clipboardCopy from 'clipboard-copy';
 import Dropdown from "./dropdown";
 import { sumShipmentWeight } from "@/lib/customer";
-
-enum Pickup{
-    upcountry = "upcountry",
-    makesend = "makesend",
-    vicinity = "vicinity"
-}
-
-interface Shipment {
-    amount: number
-    box: Box[]
-}
-
-interface Box{
-    size: string
-    weight: number
-}
-
-interface Customer{
-    id: number
-    name: string
-    post_code: string
-    shipment: Shipment
-    location: string
-    pickup?: Pickup
-}
+import { Customer } from "@/models/customer";
 
 
 type TableProps = {
@@ -73,7 +49,7 @@ export default function TableLogistic (props: TableProps){
                 onClick={handleCopyClick}
                 className="whitespace-nowrap cursor-default hover:bg-slate-300 px-6 py-4 font-medium"
               >
-                {e.id}
+                {e.pickupId}
               </td>
               <td
                 onClick={handleCopyClick}
